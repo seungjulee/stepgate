@@ -1,7 +1,5 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
-import * as s3sdk from "@aws-sdk/client-s3";
-import inputJson from './inputs/input.json';
 
 const inputBucket = new aws.s3.Bucket("s3-stepgate-bucket");
 
@@ -11,7 +9,7 @@ async function addFolderContents(path: string) {
     let object = new aws.s3.BucketObject(path, {
         bucket: inputBucket,
         source: new pulumi.asset.FileAsset(path),     // use FileAsset to point to a file
-        contentType: "application/json", // set the MIME type of the file
+        contentType: "application/json",
       });
 }
 
