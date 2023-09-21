@@ -116,10 +116,9 @@ const stateMachine = new aws.sfn.StateMachine("stateMachine", {
                     },
                     "Overrides": {
                         "ContainerOverrides": [{
-                            "Name": "Hello",
                             "Environment": [{
-                                "name": "INPUT_S3_ARN",
-                                "value": s3.bucketARN,
+                                "Name": "INPUT_S3_ARN",
+                                "Value": s3.bucketARN,
                             }]
                         }]
                     }
