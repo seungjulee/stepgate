@@ -21,6 +21,10 @@ const image = new awsx.ecr.Image("image", {
     path: "./app/summation",
 });
 
+const BUCKET_ENV_VAR_KEY = "INPUT_S3_ARN";
+const KEY_ENV_VAR_KEY = "INPUT_KEY";
+const OUTPUT_KEY_ENV_VAR = "OUTPUT_KEY";
+
 // Define the service and configure it to use our image and load balancer.
 const service = new awsx.ecs.FargateService("service", {
     cluster: cluster.arn,
@@ -35,6 +39,16 @@ const service = new awsx.ecs.FargateService("service", {
             portMappings: [{
                 containerPort: 80,
                 targetGroup: loadbalancer.defaultTargetGroup,
+            }],
+            environment: [{
+                name: BUCKET_ENV_VAR_KEY,
+                value: s3.bucketName,
+            }, {
+                name: KEY_ENV_VAR_KEY,
+                value: s3.keyPath,
+            }, {
+                name: OUTPUT_KEY_ENV_VAR,
+                value: s3.outputKeyPath,
             }],
         },
         runtimePlatform: {
@@ -60,10 +74,14 @@ new aws.iam.RolePolicyAttachment("task-exec-policy", {
     policyArn: aws.iam.ManagedPolicy.AmazonECSTaskExecutionRolePolicy,
 });
 
+new aws.iam.RolePolicyAttachment("task-s3-policy", {
+    role: ecsRole.id,
+    policyArn: aws.iam.ManagedPolicy.AmazonS3FullAccess,
+});
+
 const sfnRole = new aws.iam.Role("sfnRole", {
     assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({ Service: `states.${region}.amazonaws.com` }),
-  });
-
+});
 
 const sfnRolePolicy = new aws.iam.RolePolicy("sfnRolePolicy", {
     role: sfnRole.id,
@@ -81,7 +99,7 @@ const sfnRolePolicy = new aws.iam.RolePolicy("sfnRolePolicy", {
                 "events:PutTargets",
                 "events:PutRule",
                 "events:DescribeRule",
-                "iam:PassRole"
+                "iam:PassRole",
             ],
             "Resource": "*",
             "Effect": "Allow"
@@ -114,14 +132,15 @@ const stateMachine = new aws.sfn.StateMachine("stateMachine", {
                             "SecurityGroups": [classic.securityGroupId],
                         },
                     },
-                    "Overrides": {
-                        "ContainerOverrides": [{
-                            "Environment": [{
-                                "Name": "INPUT_S3_ARN",
-                                "Value": s3.bucketARN,
-                            }]
-                        }]
-                    }
+                    // "Overrides": {
+                    //     "ContainerOverrides": [{
+                    //         "Name": "awsx-ecs",
+                    //         "Environment": [{
+                    //             "Name": BUCKET_ENV_VAR_KEY,
+                    //             "Value": `${s3.bucketARN}/inputs/input.json`,
+                    //         }]
+                    //     }]
+                    // }
                 },
                 "Retry": [{
                     "ErrorEquals": ["States.TaskFailed"],
