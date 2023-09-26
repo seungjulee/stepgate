@@ -13,9 +13,9 @@ This is a set of Pulumi IaaS code along with a Rust application that handles the
 1. It writes a JSON file to a s3 bucket after reading it from 'inputs' directory
 2. It creates a step function that triggers a task on ECS Fargate
 3. An ECS Fargate task runs the `summation` rust program
-3.1 The `summation` rust program reads the environmental variable for input and output s3 path, and downloads the input json file.
-3.2 It sums `a` and `b` from the downloaded JSON file that has a format of { "a": <number> "b": <number> }
-3.3 It puts the result as a JSON file on the s3 from the given path passed as an environmental variable.
+- (a) The `summation` rust program reads the environmental variable for input and output s3 path, and downloads the input json file.
+- (b) It sums `a` and `b` from the downloaded JSON file that has a format of { "a": <number> "b": <number> }
+- (c) It puts the result as a JSON file on the s3 from the given path passed as an environmental variable.
 
 
 ### TODO
